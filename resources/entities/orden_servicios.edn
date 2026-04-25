@@ -1,5 +1,5 @@
 ;; AUTO-GENERATED entity configuration for orden_servicios
-;; Generated: 2026-04-25T14:11:49.808019948
+;; Generated: 2026-04-25T14:37:30.974214504
 ;; 
 ;; This file was scaffolded from the database schema.
 ;; Feel free to edit and customize as needed.
@@ -13,10 +13,10 @@
  :mode :parameter-driven
 
  ;; Fields auto-detected from database schema
- :fields [{:id :id :label "Id" :type :hidden}
+ :fields [{:id :id :label "ID" :type :hidden}
           {:id :id_orden :label "Ordenes Trabajo ID" :type :hidden}
           {:id :id_servicio
-           :label "Servicio"
+           :label "Servicios ID"
            :type :fk
            :fk :servicios
            :fk-field [:servicio]
@@ -25,8 +25,22 @@
           {:id :servicio_nombre :label "Servicio" :grid-only? true}]
 
  ;; Auto-generated queries (customize as needed)
- :queries {:list "SELECT ord.*, ord1.numero_orden as ordenes_trabajo_nombre, ser.servicio as servicio_nombre FROM orden_servicios ord LEFT JOIN ordenes_trabajo ord1 ON ord.id_orden = ord1.id LEFT JOIN servicios ser ON ord.id_servicio = ser.id ORDER BY ord.id DESC"
-           :get "SELECT * FROM orden_servicios WHERE id = ?"}
+ :queries {:list "SELECT 
+                 ord.*, 
+                 ord1.numero_orden as ordenes_trabajo_nombre, 
+                 ser.servicio as servicio_nombre 
+                 FROM orden_servicios ord 
+                 LEFT JOIN ordenes_trabajo ord1 ON ord.id_orden = ord1.id 
+                 LEFT JOIN servicios ser ON ord.id_servicio = ser.id 
+                 ORDER BY ord.id DESC"
+           :get "SELECT 
+                 ord.*, 
+                 ord1.numero_orden as ordenes_trabajo_nombre, 
+                 ser.servicio as servicio_nombre 
+                 FROM orden_servicios ord 
+                 LEFT JOIN ordenes_trabajo ord1 ON ord.id_orden = ord1.id 
+                 LEFT JOIN servicios ser ON ord.id_servicio = ser.id 
+                WHERE ord.id = ?"}
 
  ;; Available actions
  :actions {:new true :edit true :delete true}
