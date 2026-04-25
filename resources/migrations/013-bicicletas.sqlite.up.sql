@@ -1,5 +1,5 @@
 create table bicicletas (
-    id_bicicleta integer primary key autoincrement,
+    id integer primary key autoincrement,
     id_cliente integer,
     marca_modelo text,
     tipo text,

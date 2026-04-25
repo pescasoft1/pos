@@ -1,4 +1,5 @@
 CREATE TABLE servicios (
-    id_servicio INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    servicio TEXT,
+    detalles TEXT
 );

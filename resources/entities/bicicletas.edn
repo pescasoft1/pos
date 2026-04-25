@@ -11,27 +11,32 @@
  :connection :default
  :rights ["U" "A" "S"]  ;; User levels: U=User, A=Admin, S=System
  :mode :parameter-driven
- 
+
  ;; Fields auto-detected from database schema
- :fields [
-          {:id :id_bicicleta :label "ID" :type :hidden}
+ :fields [{:id :id_bicicleta :label "ID" :type :hidden}
           {:id :id_cliente :label "Clientes ID" :type :hidden}
-          {:id :marca_modelo :label "Marca Modelo" :type :textarea :placeholder "Marca Modelo..."}
-          {:id :tipo :label "Tipo" :type :textarea :placeholder "Tipo..."}
-          {:id :numero_serie :label "Numero Serie" :type :textarea :placeholder "Numero Serie..."}
+          {:id :marca_modelo :label "Marca Modelo" :type :text :placeholder "Marca Modelo..."}
+          {:id :tipo :label "Tipo" :type :select :options [{:value "" :label "Seleccione tipo..."}
+                                                           {:value "Montaña" :label "Montaña"}
+                                                           {:value "Carretera" :label "Carretera"}
+                                                           {:value "Híbrida" :label "Híbrida"}
+                                                           {:value "BMX" :label "BMX"}
+                                                           {:value "Plegable" :label "Plegable"}
+                                                           {:value "Eléctrica" :label "Eléctrica"}]}
+          {:id :numero_serie :label "Numero Serie" :type :text :placeholder "Numero Serie..."}
           {:id :anio_aproximado :label "Anio Aproximado" :type :number}]
- 
+
  ;; Auto-generated queries (customize as needed)
  :queries {:list "SELECT bic.*, cli.nombre as cliente_nombre FROM bicicletas bic LEFT JOIN clientes cli ON bic.id_cliente = cli.id ORDER BY bic.id DESC"
            :get "SELECT * FROM bicicletas WHERE id = ?"}
- 
+
  ;; Available actions
  :actions {:new true :edit true :delete true}
- 
+
  ;; Enable audit trail (tracks who created/modified and when)
  ;; Uncomment to enable:
  ;; :audit? true
- 
+
  ;; Lifecycle hooks for business logic
  ;; Senior developer: Implement these in src/pos/hooks/bicicletas.clj
  ;; Uncomment and implement as needed:
@@ -41,10 +46,9 @@
  ;;         :after-save :pos.hooks.bicicletas/after-save
  ;;         :before-delete :pos.hooks.bicicletas/before-delete
  ;;         :after-delete :pos.hooks.bicicletas/after-delete}
- 
+
  ;; Subgrids for related tables (auto-detected)
- :subgrids [
-            {:entity :ordenes_trabajo
+ :subgrids [{:entity :ordenes_trabajo
              :title "Ordenes Trabajo"
              :foreign-key :id_bicicleta
              :icon "bi bi-list-ul"
