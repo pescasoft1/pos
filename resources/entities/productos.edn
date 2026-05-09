@@ -6,12 +6,21 @@
  :mode          :parameter-driven
  :menu-category :Productos
  :menu-order    10
+ :menu-icon "bi bi-cart"
 
  :fields [{:id :id       :label "ID"        :type :hidden}
           {:id :nombre   :label "Nombre"    :type :text    :required? true :placeholder "Nombre del producto"}
           {:id :precio   :label "Precio"    :type :decimal :min 0 :step 0.01 :placeholder "0.00"}
-          {:id :categoria :label "Categoría" :type :text   :placeholder "Electrónicos, Ropa, etc."}
-          {:id :imagen   :label "Imagen"    :type :file}]
+          {:id :categoria :label "Categoría" :type :select :options [{:value "electronica" :label "Electronica"}
+                                                                     {:value "papeleria" :label "Papeleria"}
+                                                                     {:value "deportes" :label "Deportes"}
+                                                                     {:value "calzado" :label "Calzado"}
+                                                                     {:value "ropa" :label "Ropa"}
+                                                                     {:value "bicicleta" :label "Bicicleta"}
+                                                                     {:value "servicio" :label "Servicio"}]}
+          {:id :imagen   :label "Imagen"    :type :file}
+          {:id :codigobarra :label "Código de barras" :type :text}
+          ]
 
  :queries {:list "SELECT * FROM productos ORDER BY id DESC"
            :get  "SELECT * FROM productos WHERE id = ?"}

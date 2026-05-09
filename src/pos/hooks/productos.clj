@@ -11,7 +11,6 @@
   [params]
   (if-let [imagen-file (:imagen params)]
     (if (and (map? imagen-file) (:tempfile imagen-file))
-      ;; The :file key signals the framework to process the upload
       (-> params
           (assoc :file imagen-file)
           (dissoc :imagen))

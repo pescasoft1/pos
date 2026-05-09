@@ -11,10 +11,20 @@
  :connection :default
  :rights ["U" "A" "S"]  ;; User levels: U=User, A=Admin, S=System
  :mode :parameter-driven
+ :menu-hidden? true
 
  ;; Fields auto-detected from database schema
- :fields [{:id :id_bicicleta :label "ID" :type :hidden}
-          {:id :id_cliente :label "Clientes ID" :type :hidden}
+ :fields [{:id :id :label "ID" :type :hidden}
+
+          {:id :id_cliente
+           :label "Cliente"
+           :type :fk
+           :fk :clientes
+           :fk-field [:nombre]
+           :fk-can-create? true
+           :hidden-in-grid? true}
+          {:id :cliente_nombre :label "Cliente" :grid-only? true}
+
           {:id :marca_modelo :label "Marca Modelo" :type :text :placeholder "Marca Modelo..."}
           {:id :tipo :label "Tipo" :type :select :options [{:value "" :label "Seleccione tipo..."}
                                                            {:value "Montaña" :label "Montaña"}
@@ -27,8 +37,18 @@
           {:id :anio_aproximado :label "Anio Aproximado" :type :number}]
 
  ;; Auto-generated queries (customize as needed)
- :queries {:list "SELECT bic.*, cli.nombre as cliente_nombre FROM bicicletas bic LEFT JOIN clientes cli ON bic.id_cliente = cli.id ORDER BY bic.id DESC"
-           :get "SELECT * FROM bicicletas WHERE id = ?"}
+ :queries {:list "SELECT 
+                 bic.*, 
+                 cli.nombre as cliente_nombre 
+                 FROM bicicletas bic 
+                 LEFT JOIN clientes cli ON bic.id_cliente = cli.id 
+                 ORDER BY bic.id DESC"
+           :get "SELECT 
+                 bic.*, 
+                 cli.nombre as cliente_nombre 
+                 FROM bicicletas bic 
+                 LEFT JOIN clientes cli ON bic.id_cliente = cli.id 
+                WHERE bic.id = ?"}
 
  ;; Available actions
  :actions {:new true :edit true :delete true}

@@ -2,14 +2,15 @@
   (:require
    [pos.handlers.dashboard.model :as model]
    [pos.handlers.dashboard.view :as view]
-   [pos.layout :refer [application]]
-   [pos.models.util :refer [get-session-id]]))
+   [pos.layout :refer [application]]))
 
-(defn main
-  [request]
-  (let [title "DASHBOARD"
-        ok (get-session-id request)
-        js nil
+(defn main [req]
+  (let [title "Dashboard"
         stats (model/get-stats)
-        content (view/main title stats)]
-    (application request title ok js content)))
+        ventas-mes (model/get-ventas-mes)
+        ventas-hoy (model/get-ventas-hoy)
+        productos-top (model/get-productos-top)
+        ok 1]
+
+    (application req title ok nil
+                 (view/main title stats ventas-mes ventas-hoy productos-top))))

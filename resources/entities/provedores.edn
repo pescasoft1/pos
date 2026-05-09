@@ -6,6 +6,7 @@
  :mode          :parameter-driven
  :menu-category :Provedores
  :menu-order    20
+ :menu-icon "bi bi-truck"
 
  :fields [{:id :id       :label "ID"       :type :hidden}
           {:id :nombre   :label "Nombre"   :type :text  :required? true :placeholder "Nombre del proveedor"}

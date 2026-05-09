@@ -14,6 +14,8 @@
                  [cheshire "6.2.0"]
                  [clj-pdf "2.7.4"]
                  [ondrs/barcode "0.1.0"]
+                 [com.google.zxing/core "3.5.3"]
+                 [com.google.zxing/javase "3.5.3"]
                  [pdfkit-clj "0.1.7"]
                  [cljfmt "0.9.2"]
                  [clj-jwt "0.1.1"]

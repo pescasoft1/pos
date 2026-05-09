@@ -110,6 +110,3 @@
   [error-type error-key locale]
   (get-in (get-all-configs) [:messages error-type error-key locale]
           (get-in (get-all-configs) [:messages error-type error-key :en])))
-
-(comment
-  (:site-name (get-app-config)))
