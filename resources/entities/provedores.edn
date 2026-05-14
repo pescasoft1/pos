@@ -1,0 +1,24 @@
+{:entity        :provedores
+ :title         "Provedores"
+ :table         "provedores"
+ :connection    :default
+ :rights        ["U" "A" "S"]
+ :mode          :parameter-driven
+ :menu-category :Catalogos
+ :menu-order    45
+ :menu-icon "bi bi-truck"
+
+ :fields [{:id :id       :label "ID"       :type :hidden}
+          {:id :nombre   :label "Nombre"   :type :text  :required? true :placeholder "Nombre del proveedor"}
+          {:id :email    :label "Email"    :type :email :placeholder "contacto@empresa.com"}
+          {:id :telefono :label "Teléfono" :type :text  :placeholder "555-1234"}]
+
+ :queries {:list "SELECT * FROM provedores ORDER BY id DESC"
+           :get  "SELECT * FROM provedores WHERE id = ?"}
+
+ :actions {:new true :edit true :delete true}
+
+ :subgrids [{:entity      :inventario
+             :title       "Inventario"
+             :foreign-key :provedor_id
+             :icon        "bi bi-box-seam"}]}
