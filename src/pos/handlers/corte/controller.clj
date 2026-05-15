@@ -3,7 +3,8 @@
    [clojure.data.json :as json]
    [pos.handlers.corte.model :as model]
    [pos.handlers.corte.view :as view]
-   [pos.layout :refer [application]])
+   [pos.layout :as layout]
+   [pos.models.util :refer [get-session-id]])
   (:import [java.time LocalDate]))
 
 (defn today-str []
@@ -11,10 +12,10 @@
 
 (defn corte [request]
   (let [hoy (today-str)]
-    (application
+    (layout/application
      request
      "Corte de ventas"
-     0
+     (get-session-id request)
      nil
      (view/main-view hoy hoy))))
 
@@ -28,11 +29,12 @@
                   desde)
         ventas (model/get-corte desde hasta)
         resumen (model/get-corte-resumen desde hasta)]
-    {:status 200
-     :headers {"Content-Type" "application/json; charset=utf-8"}
-     :body (json/write-str
-            {:ok true
-             :desde desde
-             :hasta hasta
-             :ventas ventas
-             :resumen resumen})}))
+    (layout/application
+     request
+     "Corte de ventas"
+     (get-session-id request)
+     nil
+     {:desde desde
+      :hasta hasta
+      :ventas ventas
+      :resumen resumen})))
