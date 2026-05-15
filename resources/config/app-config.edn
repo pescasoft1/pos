@@ -6,6 +6,8 @@
        :max-field-description-length 100
        :pagination-size 25}
 
+ 
+ 
  :database {:error-codes
             {:postgres {:unique "23505"
                         :fk "23503"

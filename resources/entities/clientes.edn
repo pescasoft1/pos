@@ -11,6 +11,8 @@
  :connection :default
  :rights ["U" "A" "S"]  ;; User levels: U=User, A=Admin, S=System
  :mode :parameter-driven
+:menu-category :Catalogos
+ :menu-order 45
  :menu-icon "bi bi-person-badge"
 
  ;; Fields auto-detected from database schema

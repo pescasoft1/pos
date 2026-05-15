@@ -21,12 +21,15 @@
 (def custom-nav-links
   "Custom navigation links (non-dropdown, not entity-based)"
   
-  [ ["/home"  "HOME" "bi bi-house" nil 0]
+  [["/home"  "HOME" "bi bi-house" nil 0]
    ["/dashboard" "DASHBOARD" "bi bi-speedometer2"  "U" 10]
    ["/pos" "POS" "bi bi-cart" nil 20]
-   ["/reimpresion" "REIMPRESIÓN" "bi bi-receipt" nil 25]
+   ["/poscel" "POS CEL" "bi bi-phone" nil 25]
+;; ["/reimpresion" "REIMPRESIÓN" "bi bi-receipt" nil 25]
    ["/cotizaciones" "COTIZACIONES" "bi bi-file-earmark-text" nil 30]
-   ["/print-labels" "IMPRIMIR ETIQUETAS" "bi bi-upc-scan" nil 40]])
+;; ["/corte" "CORTE" "bi bi-file-earmark-text" nil 35]
+;; ["/print-labels" "IMPRIMIR ETIQUETAS" "bi bi-upc-scan" nil 40]
+   ])
 
 ;; Custom dropdown menus (not entity-based).
 ;; Use :order on the dropdown itself to control its position among other dropdowns.
@@ -44,7 +47,19 @@
 ;; Notice the order in items... It orders the dropdown items
 (def custom-dropdowns
   "Custom dropdown menus (not entity-based)"
-  {})
+  
+   
+{:Reports
+  {:id "navdrop3" 
+   :data-id "Reports"
+   :label "Reportes"
+   :order 50
+   :icon "bi bi-printer"
+   :items [["/corte" "Corte"  "U" 10 "bi bi-people"]
+           ["/reimpresion" "REIMPRESIÓN"  "U" 15 "bi bi-receipt"]
+           ["/print-labels" "IMPRIMIR ETIQUETAS"  "U" 20 "bi bi-upc-scan"]
+           ]}})
+  
 
 (defn ^:private parse-custom-menu-item
   "Parses a custom nav link or dropdown item vector.

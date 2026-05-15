@@ -4,8 +4,8 @@
  :connection    :default
  :rights        ["U" "A" "S"]
  :mode          :parameter-driven
- :menu-category :Provedores
- :menu-order    20
+ :menu-category :Catalogos
+ :menu-order    45
  :menu-icon "bi bi-truck"
 
  :fields [{:id :id       :label "ID"       :type :hidden}

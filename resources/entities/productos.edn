@@ -4,9 +4,12 @@
  :connection    :default
  :rights        ["U" "A" "S"]
  :mode          :parameter-driven
- :menu-category :Productos
- :menu-order    10
+ :menu-category :Catalogos 
+ :menu-order    45
  :menu-icon "bi bi-cart"
+ 
+
+ 
 
  :fields [{:id :id       :label "ID"        :type :hidden}
           {:id :nombre   :label "Nombre"    :type :text    :required? true :placeholder "Nombre del producto"}
