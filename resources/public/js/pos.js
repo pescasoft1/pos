@@ -242,6 +242,12 @@ var POS = (function () {
             html += '<div class="pos-cart-qr">' + (isMisc ? '<span class="text-muted">-</span>' : getProductQR(item.producto_id)) + '</div>';
             html += '<span class="pos-cart-name">' + escapeHtml(item.nombre) + '</span>';
             html += '<span class="pos-cart-qty">';
+
+
+
+
+
+
             if (isMisc) {
                 html += '<button class="btn btn-sm btn-outline-secondary pos-qty-btn"'
                     + " onclick=\"POS.updateQty('" + escapedName + "', -1, true)\">-</button>";
@@ -258,7 +264,6 @@ var POS = (function () {
                     + ' onclick="POS.updateQty(' + item.producto_id + ', 1, false)">+</button>';
             }
             html += '</span>';
-            html += '<span class="pos-cart-price">$' + subtotal + '</span>';
             if (isMisc) {
                 html += '<span class="pos-cart-remove"'
                     + " onclick=\"POS.removeItem('" + escapedName + "', true)\">"
@@ -273,7 +278,7 @@ var POS = (function () {
 
         container.innerHTML = html;
         totalEl.textContent = '$' + getTotal().toFixed(2);
-        
+
         var total = getTotal();
         var iva = total * 0.08;
         var totalFinal = total + iva;
@@ -293,7 +298,7 @@ var POS = (function () {
         var totalFinal = total + iva;
 
         var pago = parseFloat(document.getElementById('pos-payment').value) || 0;
-        var cambio = pago - totalFinal;
+        var cambio = pago - total;
 
         document.getElementById('pos-change').textContent =
             cambio >= 0 ? cambio.toFixed(2) : '0.00';
@@ -322,6 +327,8 @@ var POS = (function () {
 
     // --- Register the sale via fetch ---
     function registerSale() {
+        var tipoPagoEl = document.getElementById('pos-tipo-pago');
+        var tipoPago = tipoPagoEl ? tipoPagoEl.value : 'efectivo';
         if (cart.length === 0) return;
 
         var total = getTotal();
@@ -346,7 +353,8 @@ var POS = (function () {
                     categoria: item.categoria || ''
                 };
             }),
-            pago: pago
+            pago: pago,
+            tipo_pago: tipoPago
         };
 
         var btn = document.getElementById('pos-register-btn');
@@ -391,14 +399,14 @@ var POS = (function () {
     }
 
     // --- Print a receipt in a new window ---
-   function renderTicketHTML(s) {
+    function renderTicketHTML(s) {
 
-    var iva = s.total * 0.08;
-    var totalFinal = s.total + iva;
+        var iva = s.total * 0.08;
+        var totalFinal = s.total + iva;
 
-    var rows = s.items.map(function (it) {
+        var rows = s.items.map(function (it) {
 
-        return `
+            return `
         <tr>
             <td>${it.nombre}</td>
             <td style="text-align:center">
@@ -410,9 +418,9 @@ var POS = (function () {
         </tr>
         `;
 
-    }).join('');
+        }).join('');
 
-    return `
+        return `
     <div id="ticket-print">
 
         <style>
@@ -516,34 +524,42 @@ var POS = (function () {
 
     </div>
     `;
-}
+    }
     function printReceipt() {
-    if (!lastSale) {
-        alert('No hay venta para imprimir.');
-        return;
-    }
+        if (!lastSale) {
+            alert('No hay venta para imprimir.');
+            return;
+        }
 
-    var s = lastSale;
+        var s = lastSale;
 
-    // 🔥 CALCULO CORRECTO
-    var iva = s.total * 0.08;
-    var totalFinal = s.total + iva;
+        var total = Number(s.total || 0);
+        var tasaIva = 0.08;
+        var subtotal = +(total * (1 - tasaIva)).toFixed(2);
+        var iva = +(total - subtotal).toFixed(2);
 
-    var w = window.open('', '_blank', 'width=400,height=600');
-    if (!w) {
-        alert('El bloqueador de ventanas emergentes impidió abrir el recibo.');
-        return;
-    }
 
-    var rows = s.items.map(function (it) {
-        return '<tr>'
-            + '<td>' + escapeHtml(it.nombre) + '</td>'
-            + '<td style="text-align:right">' + it.cantidad + '</td>'
-            + '<td style="text-align:right">$' + (it.cantidad * it.precio).toFixed(2) + '</td>'
-            + '</tr>';
-    }).join('');
+        var w = window.open('', '_blank', 'width=400,height=600');
+        if (!w) {
+            alert('El bloqueador de ventanas emergentes impidió abrir el recibo.');
+            return;
+        }
 
-    var html = `
+        var rows = s.items.map(function (it) {
+            var lineTotal = it.cantidad * it.precio;
+            var lineSubtotal = +(lineTotal * (1 - tasaIva)).toFixed(2);
+            var lineIva = +(lineTotal - lineSubtotal).toFixed(2);
+
+            return '<tr>'
+                + '<td>' + escapeHtml(it.nombre) + '</td>'
+                + '<td style="text-align:right">' + it.cantidad + '</td>'
+                + '<td style="text-align:right">$' + lineSubtotal.toFixed(2) + '</td>'
+                + '<td style="text-align:right">$' + lineIva.toFixed(2) + '</td>'
+                + '<td style="text-align:right">$' + lineTotal.toFixed(2) + '</td>'
+                + '</tr>';
+        }).join('');
+
+        var html = `
     <html>
     <head>
         <title>Recibo #${s.venta_id}</title>
@@ -574,6 +590,8 @@ var POS = (function () {
             <tr>
                 <th>Producto</th>
                 <th>Cant</th>
+                <th>Subt.</th>
+                <th>IVA</th>
                 <th>Total</th>
             </tr>
             ${rows}
@@ -584,7 +602,7 @@ var POS = (function () {
         <table>
             <tr>
                 <td>Subtotal:</td>
-                <td style="text-align:right">$${s.total.toFixed(2)}</td>
+                <td style="text-align:right">$${subtotal.toFixed(2)}</td>
             </tr>
             <tr>
                 <td>IVA (8%):</td>
@@ -592,7 +610,7 @@ var POS = (function () {
             </tr>
             <tr>
                 <td><strong>Total:</strong></td>
-                <td style="text-align:right"><strong>$${totalFinal.toFixed(2)}</strong></td>
+                <td style="text-align:right"><strong>$${total.toFixed(2)}</strong></td>
             </tr>
             <tr>
                 <td>Pago:</td>
@@ -612,13 +630,13 @@ var POS = (function () {
     </html>
     `;
 
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
 
-    w.focus();
-    w.print();
-}
+        w.focus();
+        w.print();
+    }
     function escapeHtml(str) {
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
@@ -638,6 +656,6 @@ var POS = (function () {
         addMiscCharge: addMiscCharge
     };
 
-   
-    
+
+
 })();

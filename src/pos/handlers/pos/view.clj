@@ -61,13 +61,25 @@
      [:hr]
      [:div.d-flex.justify-content-between.align-items-center.mb-3
       [:span.fw-bold.fs-5 (i18n/tr request :pos/total)] [:span#pos-total.fw-bold.fs-4 "$0.00"]]
-    [:div.d-flex.justify-content-between.align-items-center.mb-2
-     [:span.fw-semibold "IVA (8%)"]
-     [:span#pos-iva.fs-5 "$0.00"]]
-     [:div.mb-3 [:div.d-flex.justify-content-between.align-items-center
-                 [:label.fw-semibold (i18n/tr request :pos/payment)]
-                 [:input#pos-payment.form-control.text-end
-                  {:type "number" :step "0.01" :min "0" :style "max-width: 150px;" :placeholder "0.00" :oninput "POS.calcChange()"}]]]
+     
+     [:div.mb-3
+      [:div.d-flex.justify-content-between.align-items-center
+       [:label.fw-semibold (i18n/tr request :pos/payment)]
+       [:input#pos-payment.form-control.text-end
+        {:type "number"
+         :step "0.01"
+         :min "0"
+         :style "max-width: 150px;"
+         :placeholder "0.00"
+         :oninput "POS.calcChange()"}]]
+      
+      [:div.mt-2
+       [:div.d-flex.justify-content-between.align-items-center
+        [:label.fw-semibold "Tipo de pago"]
+        [:select#pos-tipo-pago.form-select.form-select-sm
+         {:style "max-width: 150px;"}
+         [:option {:value "efectivo" :selected "selected"} "Efectivo"]
+         [:option {:value "credito"} "Crédito"]]]]]
      [:div.d-flex.justify-content-between.align-items-center.mb-4
       [:label.fw-semibold (i18n/tr request :pos/change)] [:span#pos-change.fs-5 "0.00"]]
      [:button#pos-register-btn.btn.btn-success.btn-lg.w-100.mb-3
@@ -112,4 +124,4 @@
      [:script "document.getElementById('pos-app').insertAdjacentHTML('beforeend', document.getElementById('qr-modal-template').textContent);"]
      [:script {:src "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"}]
      [:script {:src "/js/qr-scanner.js"}]
-     [:script {:src "/js/pos.js?v=4"}]]))
+     [:script {:src "/js/pos.js?v=7"}]]))

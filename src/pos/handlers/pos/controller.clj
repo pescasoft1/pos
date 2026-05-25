@@ -44,10 +44,11 @@
   "JSON API: receive a cart from the browser and save the complete sale."
   [request]
   (try
-    (let [body    (json/read-str (slurp (:body request)) :key-fn keyword)
-          items   (:items body)
-          pago    (or (:pago body) 0)
-          user-id (get-in request [:session :user_id])]
+    (let [body       (json/read-str (slurp (:body request)) :key-fn keyword)
+          items      (:items body)
+          pago       (or (:pago body) 0)
+          tipo-pago  (or (:tipo_pago body) "efectivo")
+          user-id    (get-in request [:session :user_id])]
       (if (empty? items)
         {:status  400
          :headers {"Content-Type" "application/json"}
@@ -62,6 +63,7 @@
               venta-id          (model/register-sale-tx!
                                  {:total         total
                                   :pago          pago
+                                  :tipo_pago     tipo-pago
                                   :cambio        (max cambio 0)
                                   :usuario_id    user-id
                                   :cotizacion_id cotizacion-id}

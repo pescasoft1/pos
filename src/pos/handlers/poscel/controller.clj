@@ -1,7 +1,7 @@
 (ns pos.handlers.poscel.controller
   (:require [pos.config.loader       :as cfg]
             [pos.handlers.poscel.model   :as model]
-            [pos.handlers.pos.view    :as view]
+            [pos.handlers.poscel.view    :as view]
             [pos.layout               :refer [application]]
             [pos.i18n.core            :as i18n]
             [pos.models.util          :refer [get-session-id]]

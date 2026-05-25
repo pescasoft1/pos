@@ -24,12 +24,15 @@
   [["/home"  "HOME" "bi bi-house" nil 0]
    ["/dashboard" "DASHBOARD" "bi bi-speedometer2"  "U" 10]
    ["/pos" "POS" "bi bi-cart" nil 20]
-   ["/poscel" "POS CEL" "bi bi-phone" nil 25]
-;; ["/reimpresion" "REIMPRESIÓN" "bi bi-receipt" nil 25]
+   ;; ["/poscel" "POS CEL" "bi bi-phone" nil 25]
+   ;; ["/reimpresion" "REIMPRESIÓN" "bi bi-receipt" nil 25]
    ["/cotizaciones" "COTIZACIONES" "bi bi-file-earmark-text" nil 30]
-;; ["/corte" "CORTE" "bi bi-file-earmark-text" nil 35]
-;; ["/print-labels" "IMPRIMIR ETIQUETAS" "bi bi-upc-scan" nil 40]
-   ])
+   ;; ["/corte" "CORTE" "bi bi-file-earmark-text" nil 35]
+   ;; ["/print-labels" "IMPRIMIR ETIQUETAS" "bi bi-upc-scan" nil 40]
+   ["/caja" "CAJA" nil 35 "bi bi-safe2"]
+   ]
+  
+  )
 
 ;; Custom dropdown menus (not entity-based).
 ;; Use :order on the dropdown itself to control its position among other dropdowns.

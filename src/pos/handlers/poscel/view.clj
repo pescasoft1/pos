@@ -1,6 +1,6 @@
-(ns poscel.handlers.pos.view
-  (:require [poscel.i18n.core :as i18n]
-            [poscel.handlers.qr.model :as qr-model]
+(ns pos.handlers.poscel.view
+  (:require [pos.i18n.core :as i18n]
+            [pos.handlers.qr.model :as qr-model]
             [clojure.data.json :as json]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 

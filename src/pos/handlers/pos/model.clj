@@ -62,6 +62,16 @@
                            (:last_insert_rowid venta-result)
                            (:id venta-result)
                            (first (vals venta-result)))]
+
+      (when (= (:tipo_pago venta-header) "efectivo")
+        (Insert tx :caja_movimientos
+                {:fecha          (java.time.LocalDateTime/now)
+                 :tipo_movimiento "venta"
+                 :monto          (:total venta-header)
+                 :venta_id       venta-id
+                 :descripcion    "Venta en efectivo"
+                 :usuario_id     (:usuario_id venta-header)}))
+
       (when (nil? venta-id)
         (throw (ex-info "Could not determine venta id after insert" {:result venta-result})))
       (doseq [item items]

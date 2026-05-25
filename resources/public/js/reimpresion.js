@@ -120,8 +120,9 @@ var RePrint = (function () {
 
         s.items = data.items;
 
-        var iva = s.total * 0.08;
-        var totalFinal = s.total + iva;
+        var total = parseFloat(s.total) || 0;
+        var iva = +(total * 0.08).toFixed(2);
+        var subtotal = +(total - iva).toFixed(2);
 
         var rows = s.items.map(function (it) {
 
@@ -192,7 +193,7 @@ var RePrint = (function () {
             <tr>
                 <td>Subtotal:</td>
                 <td style="text-align:right">
-                    $${parseFloat(s.total).toFixed(2)}
+                    $${subtotal.toFixed(2)}
                 </td>
             </tr>
 
@@ -207,7 +208,7 @@ var RePrint = (function () {
                 <td><strong>Total:</strong></td>
                 <td style="text-align:right">
                     <strong>
-                        $${totalFinal.toFixed(2)}
+                        $${total.toFixed(2)}
                     </strong>
                 </td>
             </tr>

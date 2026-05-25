@@ -7,19 +7,19 @@
    [pos.handlers.dashboard.controller :as dashboard]
    [pos.handlers.home.controller :as home]
    [pos.handlers.reimpresion.controller :as reimp]
-   [pos.handlers.corte.controller :as corte]))
+   [pos.handlers.corte.controller :as corte]
+   [pos.handlers.caja.controller :as caja]))
+
 
 (defroutes proutes
   (GET "/dashboard" request (dashboard/main request))
   (GET "/home" request (home/main request))
   (GET "/pos" request (pos/pos request))
 
- ;; POS CELULAR
+  ;; POS CELULAR
   (GET "/poscel" request (poscel/pos request))
   (GET "/api/poscel/search" request (poscel/api-search request))
   (POST "/api/poscel/register" request (poscel/api-register-sale request))
-
-
 
   (GET "/print-labels" request (qr/print-labels request))
   (GET "/api/pos/search" request (pos/api-search request))
@@ -30,4 +30,8 @@
   (GET "/api/reimpresion/:id" request (reimp/get-sale request))
 
   (GET "/corte" request (corte/corte request))
-  (GET "/corte/data" request (corte/get-corte request)))
+  (GET "/corte/data" request (corte/get-corte request))
+
+  (GET "/caja" request (caja/caja request))
+  (GET "/api/caja/list" request (caja/api-list request))
+  (POST "/api/caja/save" request (caja/api-save request)))
