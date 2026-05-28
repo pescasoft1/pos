@@ -43,7 +43,7 @@
         content-error-forbidden [:p error-forbidden [:a {:href return-path} back-msg]]]
     (if (= active "T")
       (if (hashers/check password (:password row))
-        (-> (redirect "/")
+        (-> (redirect "/tipo-cambio")
             (assoc :session (assoc session :user_id (:id row))))
         (application params title 0 nil content-error-general))
       (application params title 0 nil content-error-forbidden))))

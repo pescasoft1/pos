@@ -8,12 +8,15 @@
    [pos.handlers.home.controller :as home]
    [pos.handlers.reimpresion.controller :as reimp]
    [pos.handlers.corte.controller :as corte]
-   [pos.handlers.caja.controller :as caja]))
+   [pos.handlers.caja.controller :as caja]
+   [pos.handlers.tipo-cambio.controller :as tipo-cambio]))
 
 
 (defroutes proutes
   (GET "/dashboard" request (dashboard/main request))
   (GET "/home" request (home/main request))
+  (GET "/tipo-cambio" request (tipo-cambio/index request))
+  (POST "/tipo-cambio" request (tipo-cambio/save request))
   (GET "/pos" request (pos/pos request))
 
   ;; POS CELULAR

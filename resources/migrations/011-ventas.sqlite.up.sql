@@ -7,6 +7,8 @@ CREATE TABLE ventas (
     usuario_id INT,
     estado    VARCHAR(20) NOT NULL DEFAULT 'completada'
               CHECK (estado IN ('completada', 'cancelada')),
+    moneda    TEXT NOT NULL DEFAULT 'MXN'
+              CHECK (moneda IN ('MXN', 'USD')),
     FOREIGN KEY (usuario_id) REFERENCES users(id) ON DELETE SET NULL
 );
 

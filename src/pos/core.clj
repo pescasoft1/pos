@@ -24,9 +24,19 @@
 (defn wrap-login
   [handler]
   (fn [request]
-    (if (nil? (get-in request [:session :user_id]))
-      (redirect "home/login")
-      (handler request))))
+    (let [uri (:uri request)
+          logged-in? (some? (get-in request [:session :user_id]))
+          exchange-ok? (some? (get-in request [:session :tipo_cambio_valor]))
+          exchange-route? (#{"tipo-cambio" "/tipo-cambio"} uri)]
+      (cond
+        (not logged-in?)
+        (redirect "home/login")
+
+        (and (not exchange-ok?) (not exchange-route?))
+        (redirect "/tipo-cambio")
+
+        :else
+        (handler request)))))
 
 ;; Middleware for handling exceptions
 (defn wrap-exception-handling

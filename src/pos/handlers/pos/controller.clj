@@ -2,6 +2,7 @@
   (:require [pos.config.loader       :as cfg]
             [pos.handlers.pos.model   :as model]
             [pos.handlers.pos.view    :as view]
+            [pos.handlers.tipo-cambio.model :as tipo-cambio-model]
             [pos.layout               :refer [application]]
             [pos.i18n.core            :as i18n]
             [pos.models.util          :refer [get-session-id]]
@@ -9,13 +10,43 @@
             [clojure.data.json        :as json]
             [hiccup.core              :as hiccup]))
 
+(defn- parse-number [x]
+  (cond
+    (number? x) (double x)
+    (string? x) (try (Double/parseDouble x) (catch Exception _ 0.0))
+    :else 0.0))
+
+(defn- calculate-discount [subtotal discount-type discount-value]
+  (let [value (max 0.0 (parse-number discount-value))
+        discount (if (= discount-type "percent")
+                   (* subtotal (/ (min value 100.0) 100.0))
+                   value)]
+    (min subtotal discount)))
+
+(defn- format-number [n]
+  (if (== n (Math/floor n))
+    (format "%.0f" n)
+    (format "%.2f" n)))
+
+(defn- format-discount [discount-type discount-value discount]
+  (if (pos? discount)
+    (if (= discount-type "percent")
+      (str (format-number (min 100.0 (max 0.0 (parse-number discount-value))))
+           "% $" (format-number discount) " pesos")
+      (str "$" (format-number discount)))
+    ""))
+
 (defn pos
   "Serve the main POS page."
   [request]
   (let [title    (i18n/tr request :pos/title)
         ok       (get-session-id request)
         productos (model/get-productos)
-        content  (view/pos-view request productos)]
+        tipo-cambio (or (get-in request [:session :tipo_cambio_valor])
+                        (:valor_pesos (tipo-cambio-model/today-rate))
+                        (:valor_pesos (tipo-cambio-model/latest-rate))
+                        1)
+        content  (view/pos-view request productos tipo-cambio)]
     (application request title ok nil content)))
 
 (defn api-search
@@ -46,8 +77,11 @@
   (try
     (let [body       (json/read-str (slurp (:body request)) :key-fn keyword)
           items      (:items body)
-          pago       (or (:pago body) 0)
+          pago       (parse-number (or (:pago body) 0))
           tipo-pago  (or (:tipo_pago body) "efectivo")
+          moneda     (if (= (:moneda body) "USD") "USD" "MXN")
+          descuento-tipo (or (:descuento_tipo body) "amount")
+          descuento-valor (:descuento_valor body)
           user-id    (get-in request [:session :user_id])]
       (if (empty? items)
         {:status  400
@@ -57,13 +91,20 @@
               cotizacion-id     (when (and raw-cotizacion-id (not= raw-cotizacion-id ""))
                                   (try (Long/parseLong (str raw-cotizacion-id))
                                        (catch Exception _ nil)))
-              total             (reduce + 0 (map #(* (:cantidad %) (:precio %)) items))
+              subtotal          (reduce + 0 (map #(* (parse-number (:cantidad %))
+                                                    (parse-number (:precio %)))
+                                                 items))
+              descuento         (calculate-discount subtotal descuento-tipo descuento-valor)
+              descuento-texto   (format-discount descuento-tipo descuento-valor descuento)
+              total             (max 0.0 (- subtotal descuento))
               cambio            (- (double pago) (double total))
               site-name         (get-in (cfg/get-all-configs) [:app-config :site-name])
               venta-id          (model/register-sale-tx!
                                  {:total         total
                                   :pago          pago
                                   :tipo_pago     tipo-pago
+                                  :moneda        moneda
+                                  :descuento     descuento-texto
                                   :cambio        (max cambio 0)
                                   :usuario_id    user-id
                                   :cotizacion_id cotizacion-id}
@@ -72,6 +113,8 @@
            :headers {"Content-Type" "application/json"}
            :body    (json/write-str {:ok        true
                                      :venta_id  venta-id
+                                     :subtotal  subtotal
+                                     :descuento descuento
                                      :total     total
                                      :cambio    (max cambio 0)
                                      :site_name site-name})})))

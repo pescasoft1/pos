@@ -52,19 +52,38 @@
        [:h5.fw-bold.mb-3 (i18n/tr request :pos/best-sellers)]
        [:div#pos-product-grid.row.g-3 (for [p productos] (product-card p))]]]]))
 
-(defn- sale-details-panel [request csrf-token]
+(defn- sale-details-panel [request csrf-token tipo-cambio]
   [:div.col-lg-4
    [:div.card.shadow-sm.border-0
     [:div.card-header.bg-light [:h5.fw-bold.mb-0 (i18n/tr request :pos/sale-details)]]
     [:div.card-body
      [:div#pos-cart-items [:p.text-muted.text-center (i18n/tr request :pos/empty-cart)]]
      [:hr]
+     [:div.d-flex.justify-content-between.align-items-center.mb-2
+      [:span.fw-semibold "Subtotal"] [:span#pos-subtotal "$0.00"]]
+     [:div.mb-3
+      [:label.fw-semibold.mb-2 "Descuento"]
+      [:div.input-group
+       [:select#pos-discount-type.form-select
+        {:style "max-width: 120px;" :onchange "POS.calcChange()"}
+        [:option {:value "amount" :selected "selected"} "$"]
+        [:option {:value "percent"} "%"]]
+       [:input#pos-discount-value.form-control.text-end
+        {:type "number"
+         :step "0.01"
+         :min "0"
+         :placeholder "0.00"
+         :oninput "POS.calcChange()"}]]
+      [:div.d-flex.justify-content-between.align-items-center.mt-2.text-muted.small
+       [:span "Descuento aplicado"] [:span#pos-discount-amount "$0.00"]]]
      [:div.d-flex.justify-content-between.align-items-center.mb-3
       [:span.fw-bold.fs-5 (i18n/tr request :pos/total)] [:span#pos-total.fw-bold.fs-4 "$0.00"]]
+     [:div.d-flex.justify-content-between.align-items-center.mb-3.text-muted
+      [:span "Total USD"] [:span#pos-total-usd "$0.00"]]
      
      [:div.mb-3
       [:div.d-flex.justify-content-between.align-items-center
-       [:label.fw-semibold (i18n/tr request :pos/payment)]
+       [:label#pos-payment-label.fw-semibold (i18n/tr request :pos/payment)]
        [:input#pos-payment.form-control.text-end
         {:type "number"
          :step "0.01"
@@ -79,7 +98,16 @@
         [:select#pos-tipo-pago.form-select.form-select-sm
          {:style "max-width: 150px;"}
          [:option {:value "efectivo" :selected "selected"} "Efectivo"]
-         [:option {:value "credito"} "Crédito"]]]]]
+         [:option {:value "credito"} "Crédito"]]]]
+      [:div.mt-2
+       [:div.d-flex.justify-content-between.align-items-center
+        [:label.fw-semibold "Moneda"]
+        [:select#pos-moneda.form-select.form-select-sm
+         {:style "max-width: 150px;" :onchange "POS.calcChange()"}
+         [:option {:value "MXN" :selected "selected"} "Pesos"]
+         [:option {:value "USD"} "Dólares"]]]]
+      [:div.mt-2.small.text-muted.text-end
+       "Tipo de cambio: $" [:span#pos-tipo-cambio (format "%.4f" (double tipo-cambio))] " MXN"]]
      [:div.d-flex.justify-content-between.align-items-center.mb-4
       [:label.fw-semibold (i18n/tr request :pos/change)] [:span#pos-change.fs-5 "0.00"]]
      [:button#pos-register-btn.btn.btn-success.btn-lg.w-100.mb-3
@@ -111,17 +139,18 @@
 </div>
 </div>")
 
-(defn pos-view [request productos]
+(defn pos-view [request productos tipo-cambio]
   (let [csrf-token (anti-forgery-field)]
     [:div
      [:link {:rel "stylesheet" :href "/css/pos.css?v=1"}]
      [:script {:src "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"}]
-     [:div#pos-app {:data-productos (json/write-str productos)}
+     [:div#pos-app {:data-productos (json/write-str productos)
+                    :data-tipo-cambio (str tipo-cambio)}
       [:div.row.g-3
        (products-panel request productos)
-       (sale-details-panel request csrf-token)]]
+       (sale-details-panel request csrf-token tipo-cambio)]]
      [:script {:type "text/html" :id "qr-modal-template"} qr-modal-str]
      [:script "document.getElementById('pos-app').insertAdjacentHTML('beforeend', document.getElementById('qr-modal-template').textContent);"]
      [:script {:src "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"}]
      [:script {:src "/js/qr-scanner.js"}]
-     [:script {:src "/js/pos.js?v=7"}]]))
+     [:script {:src "/js/pos.js?v=12"}]]))

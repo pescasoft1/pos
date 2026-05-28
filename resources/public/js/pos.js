@@ -5,6 +5,7 @@ var POS = (function () {
     var lastSale = null;
     var allProducts = [];
     var qrCodeCache = {};
+    var tipoCambio = 1;
 
     function generateQRBase64(text, size) {
         var key = text + '_' + size;
@@ -43,8 +44,15 @@ var POS = (function () {
         catch (e) { return []; }
     }
 
+    function getExchangeRate() {
+        var el = document.getElementById('pos-app');
+        var value = el ? parseFloat(el.getAttribute('data-tipo-cambio')) : 1;
+        return value > 0 ? value : 1;
+    }
+
     function init() {
         allProducts = getProductData();
+        tipoCambio = getExchangeRate();
         loadQuoteCart();
         var input = document.getElementById('pos-search');
         if (input) {
@@ -213,21 +221,57 @@ var POS = (function () {
         renderCart();
     }
 
-    function getTotal() {
+    function getSubtotal() {
         return cart.reduce(function (sum, item) {
             return sum + item.cantidad * item.precio;
         }, 0);
     }
 
+    function getDiscount() {
+        var subtotal = getSubtotal();
+        var typeEl = document.getElementById('pos-discount-type');
+        var valueEl = document.getElementById('pos-discount-value');
+        var type = typeEl ? typeEl.value : 'amount';
+        var value = valueEl ? (parseFloat(valueEl.value) || 0) : 0;
+
+        if (value <= 0 || subtotal <= 0) return 0;
+        var discount = type === 'percent' ? subtotal * Math.min(value, 100) / 100 : value;
+        return Math.min(discount, subtotal);
+    }
+
+    function getTotal() {
+        return Math.max(getSubtotal() - getDiscount(), 0);
+    }
+
+    function getCurrency() {
+        var monedaEl = document.getElementById('pos-moneda');
+        return monedaEl ? monedaEl.value : 'MXN';
+    }
+
+    function getPaymentAmount() {
+        return parseFloat(document.getElementById('pos-payment').value) || 0;
+    }
+
+    function getPaymentInMXN() {
+        var payment = getPaymentAmount();
+        return getCurrency() === 'USD' ? payment * tipoCambio : payment;
+    }
+
     // --- Render the cart panel ---
     function renderCart() {
         var container = document.getElementById('pos-cart-items');
+        var subtotalEl = document.getElementById('pos-subtotal');
+        var discountEl = document.getElementById('pos-discount-amount');
         var totalEl = document.getElementById('pos-total');
         var registerBtn = document.getElementById('pos-register-btn');
 
         if (cart.length === 0) {
             container.innerHTML = '<p class="text-muted text-center">Carrito vacío</p>';
+            subtotalEl.textContent = '$0.00';
+            discountEl.textContent = '$0.00';
             totalEl.textContent = '$0.00';
+            var totalUsdEl = document.getElementById('pos-total-usd');
+            if (totalUsdEl) totalUsdEl.textContent = 'US$0.00';
             registerBtn.disabled = true;
             calcChange();
             return;
@@ -277,7 +321,11 @@ var POS = (function () {
         });
 
         container.innerHTML = html;
+        subtotalEl.textContent = '$' + getSubtotal().toFixed(2);
+        discountEl.textContent = '$' + getDiscount().toFixed(2);
         totalEl.textContent = '$' + getTotal().toFixed(2);
+        var totalUsdEl = document.getElementById('pos-total-usd');
+        if (totalUsdEl) totalUsdEl.textContent = 'US$' + (getTotal() / tipoCambio).toFixed(2);
 
         var total = getTotal();
         var iva = total * 0.08;
@@ -293,15 +341,31 @@ var POS = (function () {
     }
 
     function calcChange() {
+        var subtotalEl = document.getElementById('pos-subtotal');
+        var discountEl = document.getElementById('pos-discount-amount');
+        var totalEl = document.getElementById('pos-total');
         var total = getTotal();
         var iva = total * 0.08;
         var totalFinal = total + iva;
 
-        var pago = parseFloat(document.getElementById('pos-payment').value) || 0;
+        var moneda = getCurrency();
+        var pago = getPaymentInMXN();
         var cambio = pago - total;
 
+        if (subtotalEl) subtotalEl.textContent = '$' + getSubtotal().toFixed(2);
+        if (discountEl) discountEl.textContent = '$' + getDiscount().toFixed(2);
+        if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+        var totalUsdEl = document.getElementById('pos-total-usd');
+        if (totalUsdEl) totalUsdEl.textContent = 'US$' + (total / tipoCambio).toFixed(2);
+        var paymentLabel = document.getElementById('pos-payment-label');
+        if (paymentLabel) paymentLabel.textContent = moneda === 'USD' ? 'Pago USD' : 'Pago MXN';
+
         document.getElementById('pos-change').textContent =
-            cambio >= 0 ? cambio.toFixed(2) : '0.00';
+            cambio >= 0
+                ? (moneda === 'USD'
+                    ? '$' + cambio.toFixed(2) + ' MXN / US$' + (cambio / tipoCambio).toFixed(2)
+                    : '$' + cambio.toFixed(2) + ' MXN')
+                : '0.00';
 
         // 🔥 MOSTRAR IVA
         var ivaEl = document.getElementById('pos-iva');
@@ -320,6 +384,9 @@ var POS = (function () {
         cart = [];
         lastSale = null;
         document.getElementById('pos-payment').value = '';
+        document.getElementById('pos-discount-type').value = 'amount';
+        document.getElementById('pos-discount-value').value = '';
+        document.getElementById('pos-moneda').value = 'MXN';
         document.getElementById('pos-change').textContent = '0.00';
         document.getElementById('pos-print-btn').style.display = 'none';
         renderCart();
@@ -329,10 +396,18 @@ var POS = (function () {
     function registerSale() {
         var tipoPagoEl = document.getElementById('pos-tipo-pago');
         var tipoPago = tipoPagoEl ? tipoPagoEl.value : 'efectivo';
+        var discountTypeEl = document.getElementById('pos-discount-type');
+        var discountValueEl = document.getElementById('pos-discount-value');
+        var discountType = discountTypeEl ? discountTypeEl.value : 'amount';
+        var discountValue = discountValueEl ? (parseFloat(discountValueEl.value) || 0) : 0;
+        var moneda = getCurrency();
         if (cart.length === 0) return;
 
+        var subtotal = getSubtotal();
+        var discount = getDiscount();
         var total = getTotal();
-        var pago = parseFloat(document.getElementById('pos-payment').value) || 0;
+        var pagoOriginal = getPaymentAmount();
+        var pago = getPaymentInMXN();
         if (pago < total) {
             alert('El pago debe ser mayor o igual al total.');
             return;
@@ -354,7 +429,12 @@ var POS = (function () {
                 };
             }),
             pago: pago,
-            tipo_pago: tipoPago
+            pago_original: pagoOriginal,
+            tipo_pago: tipoPago,
+            moneda: moneda,
+            tipo_cambio: tipoCambio,
+            descuento_tipo: discountType,
+            descuento_valor: discountValue
         };
 
         var btn = document.getElementById('pos-register-btn');
@@ -377,6 +457,13 @@ var POS = (function () {
                         venta_id: data.venta_id, items: cart.slice(),
                         site_name: data.site_name,
                         total: data.total, pago: pago,
+                        subtotal: data.subtotal || subtotal,
+                        descuento: data.descuento || discount,
+                        descuento_tipo: discountType,
+                        descuento_valor: discountValue,
+                        moneda: moneda,
+                        tipo_cambio: tipoCambio,
+                        pago_original: pagoOriginal,
                         cambio: data.cambio,
                         fecha: new Date().toLocaleString()
                     };
@@ -384,6 +471,9 @@ var POS = (function () {
                     document.getElementById('pos-print-btn').style.display = '';
                     cart = [];
                     document.getElementById('pos-payment').value = '';
+                    document.getElementById('pos-discount-type').value = 'amount';
+                    document.getElementById('pos-discount-value').value = '';
+                    document.getElementById('pos-moneda').value = 'MXN';
                     renderCart();
                 } else {
                     alert('Error: ' + (data.error || 'Error desconocido'));
@@ -401,10 +491,15 @@ var POS = (function () {
     // --- Print a receipt in a new window ---
     function renderTicketHTML(s) {
 
-        var iva = s.total * 0.08;
-        var totalFinal = s.total + iva;
+        var total = Number(s.total || 0);
+        var tasaIva = 0.08;
+        var subtotal = +(total / (1 + tasaIva)).toFixed(2);
+        var iva = +(total - subtotal).toFixed(2);
+        var descuento = Number(s.descuento || 0);
 
         var rows = s.items.map(function (it) {
+            var lineTotal = it.cantidad * it.precio;
+            var lineSubtotal = lineTotal / (1 + tasaIva);
 
             return `
         <tr>
@@ -413,7 +508,7 @@ var POS = (function () {
                 ${it.cantidad}
             </td>
             <td style="text-align:right">
-                $${(it.cantidad * it.precio).toFixed(2)}
+                $${lineSubtotal.toFixed(2)}
             </td>
         </tr>
         `;
@@ -474,7 +569,7 @@ var POS = (function () {
                 <tr>
                     <th>Producto</th>
                     <th>Cant</th>
-                    <th>Total</th>
+                    <th>Subtotal</th>
                 </tr>
 
             </thead>
@@ -491,25 +586,25 @@ var POS = (function () {
 
         <table>
 
+            ${descuento > 0 ? `
+            <tr>
+                <td>Descuento:</td>
+                <td style="text-align:right">-$${descuento.toFixed(2)}</td>
+            </tr>` : ''}
+
             <tr>
                 <td>Subtotal:</td>
-                <td style="text-align:right">
-                    $${s.total.toFixed(2)}
-                </td>
+                <td style="text-align:right">$${subtotal.toFixed(2)}</td>
             </tr>
-
             <tr>
                 <td>IVA (8%):</td>
-                <td style="text-align:right">
-                    $${iva.toFixed(2)}
-                </td>
+                <td style="text-align:right">$${iva.toFixed(2)}</td>
             </tr>
-
             <tr>
                 <td><strong>Total:</strong></td>
                 <td style="text-align:right">
                     <strong>
-                        $${totalFinal.toFixed(2)}
+                        $${total.toFixed(2)}
                     </strong>
                 </td>
             </tr>
@@ -534,8 +629,12 @@ var POS = (function () {
         var s = lastSale;
 
         var total = Number(s.total || 0);
+        var descuento = Number(s.descuento || 0);
+        var moneda = s.moneda || 'MXN';
+        var tipoCambioTicket = Number(s.tipo_cambio || tipoCambio || 1);
+        var pagoOriginal = Number(s.pago_original || 0);
         var tasaIva = 0.08;
-        var subtotal = +(total * (1 - tasaIva)).toFixed(2);
+        var subtotal = +(total / (1 + tasaIva)).toFixed(2);
         var iva = +(total - subtotal).toFixed(2);
 
 
@@ -547,15 +646,12 @@ var POS = (function () {
 
         var rows = s.items.map(function (it) {
             var lineTotal = it.cantidad * it.precio;
-            var lineSubtotal = +(lineTotal * (1 - tasaIva)).toFixed(2);
-            var lineIva = +(lineTotal - lineSubtotal).toFixed(2);
+            var lineSubtotal = lineTotal / (1 + tasaIva);
 
             return '<tr>'
                 + '<td>' + escapeHtml(it.nombre) + '</td>'
                 + '<td style="text-align:right">' + it.cantidad + '</td>'
                 + '<td style="text-align:right">$' + lineSubtotal.toFixed(2) + '</td>'
-                + '<td style="text-align:right">$' + lineIva.toFixed(2) + '</td>'
-                + '<td style="text-align:right">$' + lineTotal.toFixed(2) + '</td>'
                 + '</tr>';
         }).join('');
 
@@ -590,9 +686,7 @@ var POS = (function () {
             <tr>
                 <th>Producto</th>
                 <th>Cant</th>
-                <th>Subt.</th>
-                <th>IVA</th>
-                <th>Total</th>
+                <th>Subtotal</th>
             </tr>
             ${rows}
         </table>
@@ -600,6 +694,11 @@ var POS = (function () {
         <div class="line"></div>
 
         <table>
+            ${descuento > 0 ? `
+            <tr>
+                <td>Descuento:</td>
+                <td style="text-align:right">-$${descuento.toFixed(2)}</td>
+            </tr>` : ''}
             <tr>
                 <td>Subtotal:</td>
                 <td style="text-align:right">$${subtotal.toFixed(2)}</td>
@@ -614,8 +713,17 @@ var POS = (function () {
             </tr>
             <tr>
                 <td>Pago:</td>
-                <td style="text-align:right">$${s.pago.toFixed(2)}</td>
+                <td style="text-align:right">${
+                    moneda === 'USD'
+                        ? 'US$' + pagoOriginal.toFixed(2) + ' ($' + s.pago.toFixed(2) + ' MXN)'
+                        : '$' + s.pago.toFixed(2)
+                }</td>
             </tr>
+            ${moneda === 'USD' ? `
+            <tr>
+                <td>Tipo cambio:</td>
+                <td style="text-align:right">$${tipoCambioTicket.toFixed(4)} MXN</td>
+            </tr>` : ''}
             <tr>
                 <td>Cambio:</td>
                 <td style="text-align:right">$${s.cambio.toFixed(2)}</td>
