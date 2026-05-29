@@ -8,9 +8,9 @@
    [:div.container.mt-5
     [:div.text-center
      [:h1.text-info "POS"]
-     [:p.text-muted "Serving the community since 2003"]
-     [:p "123 New Lane, Industrial City, CA 90210"]
-     [:p "Phone: (686) 123-4567 | Email: contactlhc@lhc.com"]]]))
+     [:p.text-muted "Sirviendo a la comunidad desde 1996 the community since 2003"]
+     [:p "Av. Coahuila 123 C.P. 21050, Mexicali B.C."]
+     [:p "Phone: (686) 166-7959 | Email: marcopescador@hotmail.com"]]]))
 
 (defn main-view
   "This creates the login form and we are passing the title from the controller"

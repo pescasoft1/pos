@@ -1,7 +1,12 @@
 CREATE TABLE productos (
-    id       INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre   VARCHAR(255),
-    precio   DECIMAL(10,2),
-    categoria VARCHAR(255),
-    imagen   VARCHAR(255)
-);
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	nombre VARCHAR,
+	precio DECIMAL,
+	categoria VARCHAR,
+	imagen VARCHAR,
+	codigo_qr TEXT,
+	precio_compra DECIMAL
+, codigobarra TEXT);
+
+CREATE UNIQUE INDEX idx_productos_codigobarra
+ON productos(codigobarra);

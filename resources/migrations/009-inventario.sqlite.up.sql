@@ -3,7 +3,8 @@ CREATE TABLE inventario (
     producto_id          INT,
     cantidad             INT DEFAULT 0,
     provedor_id          INT,
-    ultima_actualizacion DATE DEFAULT (date('now')),
+    ultima_actualizacion DATE DEFAULT (date('now')), 
+    costo integer,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
     FOREIGN KEY (provedor_id) REFERENCES provedores(id) ON DELETE SET NULL
 );

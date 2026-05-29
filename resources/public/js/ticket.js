@@ -2,6 +2,9 @@ function buildTicketHTML(s) {
 
     var iva = s.total * 0.08;
     var totalFinal = s.total + iva;
+    var logoUrl = '/images/logo.png?v=20260529';
+    var companyName = s.company_name || s.site_name || 'BAZAR DURAN';
+    var companyAddress = s.company_address || '';
 
     var rows = s.items.map(function (it) {
 
@@ -50,7 +53,11 @@ function buildTicketHTML(s) {
 
         <div style="text-align:center">
 
-            <h2>${s.site_name || 'POS'}</h2>
+            <img src="${logoUrl}" style="width:120px;height:auto;margin-bottom:10px;" alt="Logo">
+
+            <h2>${companyName}</h2>
+
+            ${companyAddress ? `<div style="font-size:11px;line-height:1.35;margin-bottom:6px;">${companyAddress}</div>` : ''}
 
             <h3>Ticket de Venta</h3>
 

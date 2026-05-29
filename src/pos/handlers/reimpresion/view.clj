@@ -56,4 +56,4 @@
 
    ;; JS
    [:script
-    {:src "/js/reimpresion.js?v=4"}]])
+    {:src "/js/reimpresion.js?v=6"}]])

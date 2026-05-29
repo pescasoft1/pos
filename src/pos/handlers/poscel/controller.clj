@@ -18,6 +18,12 @@
         content  (view/pos-view request productos)]
     (application request title ok nil content)))
 
+(defn- localized-company-value [company field locale]
+  (let [value (get company field)]
+    (if (map? value)
+      (or (get value locale) (get value :es) (get value :en) "")
+      (or value ""))))
+
 (defn api-search
   "JSON API: search products by name or category.
    If search term is numeric, first tries to find by ID."
@@ -58,7 +64,12 @@
                                        (catch Exception _ nil)))
               total             (reduce + 0 (map #(* (:cantidad %) (:precio %)) items))
               cambio            (- (double pago) (double total))
-              site-name         (get-in (cfg/get-all-configs) [:app-config :site-name])
+              app-config        (:app-config (cfg/get-all-configs))
+              locale            (i18n/get-locale-from-session (:session request))
+              company           (:company app-config)
+              company-name      (localized-company-value company :name locale)
+              company-address   (localized-company-value company :address locale)
+              site-name         (or (:site-name app-config) company-name)
               venta-id          (model/register-sale-tx!
                                  {:total         total
                                   :pago          pago
@@ -72,6 +83,8 @@
                                      :venta_id  venta-id
                                      :total     total
                                      :cambio    (max cambio 0)
+                                     :company_name company-name
+                                     :company_address company-address
                                      :site_name site-name})})))
     (catch Exception e
       (println "[ERROR] POS register-sale failed:" (.getMessage e))

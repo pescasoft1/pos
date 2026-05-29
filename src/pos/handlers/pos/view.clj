@@ -153,4 +153,4 @@
      [:script "document.getElementById('pos-app').insertAdjacentHTML('beforeend', document.getElementById('qr-modal-template').textContent);"]
      [:script {:src "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"}]
      [:script {:src "/js/qr-scanner.js"}]
-     [:script {:src "/js/pos.js?v=12"}]]))
+     [:script {:src "/js/pos.js?v=14"}]]))

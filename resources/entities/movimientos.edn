@@ -24,7 +24,9 @@
            :options [{:value "compra" :label "Compra"}
                      {:value "venta"  :label "Venta"}]}
 
-          {:id :cantidad :label "Cantidad" :type :number :required? true :min 1}]
+          {:id :cantidad :label "Cantidad" :type :number :required? true :min 1}
+           {:id :fecha_movimiento :label :type :datetime "Fecha" :grid-only? true}
+          ]
 
  :queries {:list "SELECT
                     mov.*,

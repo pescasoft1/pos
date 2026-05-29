@@ -28,8 +28,10 @@
            :hidden-in-grid? true}
           {:id :producto_nombre :label "Producto" :grid-only? true}
 
-          {:id :cantidad :label "Cantidad" :type :number :min 0}]
-
+          {:id :cantidad :label "Cantidad" :type :number :min 0}
+          {:id :ultima_actualizacion :label "Fecha" :grid-only? true}
+          {:id :costo :label "Costo" :type :decimal :min 0 :step 0.01}
+          ]
  :queries {:list "SELECT
                     inv.*,
                     pro.nombre  AS producto_nombre,

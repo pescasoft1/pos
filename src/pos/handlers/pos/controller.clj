@@ -36,6 +36,12 @@
       (str "$" (format-number discount)))
     ""))
 
+(defn- localized-company-value [company field locale]
+  (let [value (get company field)]
+    (if (map? value)
+      (or (get value locale) (get value :es) (get value :en) "")
+      (or value ""))))
+
 (defn pos
   "Serve the main POS page."
   [request]
@@ -98,7 +104,12 @@
               descuento-texto   (format-discount descuento-tipo descuento-valor descuento)
               total             (max 0.0 (- subtotal descuento))
               cambio            (- (double pago) (double total))
-              site-name         (get-in (cfg/get-all-configs) [:app-config :site-name])
+              app-config        (:app-config (cfg/get-all-configs))
+              locale            (i18n/get-locale-from-session (:session request))
+              company           (:company app-config)
+              company-name      (localized-company-value company :name locale)
+              company-address   (localized-company-value company :address locale)
+              site-name         (or (:site-name app-config) company-name)
               venta-id          (model/register-sale-tx!
                                  {:total         total
                                   :pago          pago
@@ -117,6 +128,8 @@
                                      :descuento descuento
                                      :total     total
                                      :cambio    (max cambio 0)
+                                     :company_name company-name
+                                     :company_address company-address
                                      :site_name site-name})})))
     (catch Exception e
       (println "[ERROR] POS register-sale failed:" (.getMessage e))

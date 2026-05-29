@@ -456,6 +456,8 @@ var POS = (function () {
                     lastSale = {
                         venta_id: data.venta_id, items: cart.slice(),
                         site_name: data.site_name,
+                        company_name: data.company_name,
+                        company_address: data.company_address,
                         total: data.total, pago: pago,
                         subtotal: data.subtotal || subtotal,
                         descuento: data.descuento || discount,
@@ -496,6 +498,8 @@ var POS = (function () {
         var subtotal = +(total / (1 + tasaIva)).toFixed(2);
         var iva = +(total - subtotal).toFixed(2);
         var descuento = Number(s.descuento || 0);
+        var companyName = escapeHtml(s.company_name || s.site_name || 'POS');
+        var companyAddress = escapeHtml(s.company_address || '');
 
         var rows = s.items.map(function (it) {
             var lineTotal = it.cantidad * it.precio;
@@ -546,7 +550,11 @@ var POS = (function () {
 
         <div style="text-align:center">
 
-            <h2>${s.site_name || 'POS'}</h2>
+            <img src="/images/logo.png?v=20260529" style="width:120px;height:auto;margin-bottom:10px;" alt="Logo">
+
+            <h2>${companyName}</h2>
+
+            ${companyAddress ? `<div style="font-size:11px;line-height:1.35;margin-bottom:6px;">${companyAddress}</div>` : ''}
 
             <h3>Ticket de Venta</h3>
 
@@ -636,6 +644,8 @@ var POS = (function () {
         var tasaIva = 0.08;
         var subtotal = +(total / (1 + tasaIva)).toFixed(2);
         var iva = +(total - subtotal).toFixed(2);
+        var companyName = escapeHtml(s.company_name || s.site_name || 'BAZAR DURAN');
+        var companyAddress = escapeHtml(s.company_address || '');
 
 
         var w = window.open('', '_blank', 'width=400,height=600');
@@ -671,9 +681,11 @@ var POS = (function () {
         </style>
     </head>
     <body>
-
-        <h2 style="text-align:center">${s.site_name}</h2>
-        <h3 style="text-align:center">Recibo de Venta</h3>
+        <div style="text-align:center">
+            <img src="/images/logo.png?v=20260529" style="width:120px;height:auto;margin-bottom:10px;" alt="Logo">
+            <h2 style="margin:0 0 4px;">${companyName}</h2>
+            ${companyAddress ? `<div style="font-size:11px;line-height:1.35;margin-bottom:8px;">${companyAddress}</div>` : ''}
+        </div>
 
         <p style="text-align:center">
             Venta #${s.venta_id}<br>
@@ -742,9 +754,46 @@ var POS = (function () {
         w.document.write(html);
         w.document.close();
 
-        w.focus();
-        w.print();
+        printWindowWhenReady(w);
     }
+
+    function printWindowWhenReady(w) {
+        var images = Array.prototype.slice.call(w.document.images || []);
+
+        if (images.length === 0) {
+            w.focus();
+            w.print();
+            return;
+        }
+
+        var remaining = images.length;
+        var done = false;
+
+        function printNow() {
+            if (done) return;
+            done = true;
+            w.focus();
+            w.print();
+        }
+
+        function imageDone() {
+            remaining--;
+            if (remaining <= 0) printNow();
+        }
+
+        images.forEach(function (img) {
+            if (img.complete) {
+                imageDone();
+                return;
+            }
+
+            img.onload = imageDone;
+            img.onerror = imageDone;
+        });
+
+        setTimeout(printNow, 1500);
+    }
+
     function escapeHtml(str) {
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));

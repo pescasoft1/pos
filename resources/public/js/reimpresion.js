@@ -24,6 +24,11 @@ var RePrint = (function () {
 
                 lastSale = data;
 
+                if (data.sale) {
+                    data.sale.company_name = data.company_name;
+                    data.sale.company_address = data.company_address;
+                }
+
                 render(data);
 
             });
@@ -123,6 +128,8 @@ var RePrint = (function () {
         var total = parseFloat(s.total) || 0;
         var iva = +(total * 0.08).toFixed(2);
         var subtotal = +(total - iva).toFixed(2);
+        var companyName = s.company_name || s.site_name || 'POS';
+        var companyAddress = s.company_address || '';
 
         var rows = s.items.map(function (it) {
 
@@ -159,9 +166,13 @@ var RePrint = (function () {
 
         </style>
 
-        <h2 style="text-align:center">
-            ${s.site_name || 'POS'}
-        </h2>
+        <div style="text-align:center">
+            <img src="/images/logo.png?v=20260529" style="width:120px;height:auto;margin-bottom:10px;" alt="Logo">
+            <h2 style="margin:0 0 4px;">
+                ${companyName}
+            </h2>
+            ${companyAddress ? `<div style="font-size:11px;line-height:1.35;margin-bottom:8px;">${companyAddress}</div>` : ''}
+        </div>
 
         <h3 style="text-align:center">
             Recibo de Venta
