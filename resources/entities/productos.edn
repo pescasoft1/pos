@@ -1,47 +1,49 @@
-{:entity        :productos
- :title         "Productos"
- :table         "productos"
- :connection    :default
- :rights        ["U" "A" "S"]
- :mode          :parameter-driven
- :menu-category :Catalogos 
- :menu-order    45
- :menu-icon "bi bi-cart"
+{:entity :productos
+ :title "Productos"
+ :table "productos"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-icon "bi bi-box-seam"
  
-
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :nombre :label "Nombre" :type :textarea :placeholder "Nombre..."}
+          {:id :precio :label "Precio" :type :decimal}
+          {:id :categoria :label "Categoria" :type :textarea :placeholder "Categoria..."}
+          {:id :imagen :label "Imagen" :type :textarea :placeholder "Imagen..."}
+          {:id :codigo_qr :label "Codigo Qr" :type :textarea :placeholder "Codigo Qr..."}
+          {:id :precio_compra :label "Precio Compra" :type :decimal}
+          {:id :codigobarra :label "Codigobarra" :type :textarea :placeholder "Codigobarra..."}]
  
-
- :fields [{:id :id       :label "ID"        :type :hidden}
-          {:id :nombre   :label "Nombre"    :type :text    :required? true :placeholder "Nombre del producto"}
-          {:id :precio   :label "Precio de venta"    :type :decimal :min 0 :step 0.01 :placeholder "0.00"}
-          {:id :precio_compra  :label "Precio de compra"    :type :decimal :min 0 :step 0.01 :placeholder "0.00"}
-          {:id :categoria :label "Categoría" :type :select :options [{:value "Electronica" :label "Electronica"}
-                                                                     {:value "Ropa" :label "Ropa"}
-                                                                     {:value "Accesorios" :label "Accesorios"}
-                                                                     {:value "Bicicleta" :label "Bicicleta"}
-                                                                     {:value "Suplementos Alimenticios" :label "Suplementos Alimenticios"}
-                                                                     {:value "Refacciones" :label "Refacciones"}
-                                                                     {:value "servicio" :label "Servicio"}
-                                                                     {:value "Otros" :label "Otros"}
-                                                                     
-                                                                     ]}
-          {:id :imagen   :label "Imagen"    :type :file}
-          {:id :codigobarra :label "Código de barras" :type :text}
-          ]
-
  :queries {:list "SELECT * FROM productos ORDER BY id DESC"
-           :get  "SELECT * FROM productos WHERE id = ?"}
-
+           :get "SELECT * FROM productos WHERE id = ?"}
+ 
  :actions {:new true :edit true :delete true}
-
- :hooks {:after-load  :pos.hooks.productos/after-load
-         :before-save :pos.hooks.productos/before-save}
-
- :subgrids [{:entity      :inventario
-             :title       "Inventario"
+ 
+ :subgrids [
+            {:entity :cotizaciones_detalle
+             :title "Cotizaciones Detalle"
              :foreign-key :producto_id
-             :icon        "bi bi-box-seam"}
-            {:entity      :movimientos
-             :title       "Movimientos"
+             :icon "bi bi-list-ul"
+             :label "Cotizaciones Detalle"
+             :relationship-type :one-to-many}
+            {:entity :inventario
+             :title "Inventario"
              :foreign-key :producto_id
-             :icon        "bi bi-arrow-left-right"}]}
+             :icon "bi bi-list-ul"
+             :label "Inventario"
+             :relationship-type :one-to-many}
+            {:entity :movimientos
+             :title "Movimientos"
+             :foreign-key :producto_id
+             :icon "bi bi-list-ul"
+             :label "Movimientos"
+             :relationship-type :one-to-many}
+            {:entity :ventas_detalle
+             :title "Ventas Detalle"
+             :foreign-key :producto_id
+             :icon "bi bi-list-ul"
+             :label "Ventas Detalle"
+             :relationship-type :one-to-many}]}

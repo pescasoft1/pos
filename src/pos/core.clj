@@ -4,12 +4,13 @@
    [compojure.route :as route]
    [pos.models.crud :refer [config KEY]]
    [pos.routes.proutes :refer [proutes]]
-   [pos.routes.routes :refer [open-routes password-routes cotizaciones-routes]]
+   [pos.routes.routes :refer [open-routes password-routes]]
    [pos.routes.i18n :refer [i18n-routes]]
    [pos.routes.tabgrid :refer [tabgrid-routes]]
    [pos.routes.fk-api :refer [fk-api-routes]]
    [pos.engine.router :as engine]
    [pos.config.loader :as cfg]
+   [pos.i18n.core :as i18n]
    [clojure.string :as str]
    [clojure.java.io :as io]
    [clojure.data.json :as json]
@@ -24,19 +25,9 @@
 (defn wrap-login
   [handler]
   (fn [request]
-    (let [uri (:uri request)
-          logged-in? (some? (get-in request [:session :user_id]))
-          exchange-ok? (some? (get-in request [:session :tipo_cambio_valor]))
-          exchange-route? (#{"tipo-cambio" "/tipo-cambio"} uri)]
-      (cond
-        (not logged-in?)
-        (redirect "home/login")
-
-        (and (not exchange-ok?) (not exchange-route?))
-        (redirect "/tipo-cambio")
-
-        :else
-        (handler request)))))
+    (if (nil? (get-in request [:session :user_id]))
+      (redirect "home/login")
+      (handler request))))
 
 ;; Middleware for handling exceptions
 (defn wrap-exception-handling
@@ -108,7 +99,7 @@
       (try
         (handler request)
         (catch Exception e
-          (let [rc (root-cause e)
+          (let [rc ^Throwable (root-cause e)
                 exd (ex-data e)
                 csrf? (true? (:invalid-anti-forgery-token exd))
                 sql? (instance? java.sql.SQLException rc)
@@ -116,17 +107,18 @@
                 kind (when sql? (classify-sql rc msg))
                 dd (when (= kind :unique) (dup-details msg))
                 ;; Decide status and friendly message (with localization support)
+                locale (or (:locale (:session request)) :es)
                 [status plain] (cond
-                                 csrf? [403 (cfg/get-error-message :security :csrf :es)]
+                                 csrf? [403 (cfg/get-error-message :security :csrf locale)]
                                  (= kind :unique) [409 (if-let [f (:field dd)]
-                                                         (str (cfg/get-error-message :database :unique :es) " " f)
-                                                         (cfg/get-error-message :database :unique :es))]
-                                 (= kind :fk)     [409 (cfg/get-error-message :database :foreign-key :es)]
-                                 (= kind :not-null) [422 (cfg/get-error-message :database :not-null :es)]
-                                 (= kind :check)  [422 (cfg/get-error-message :database :check :es)]
-                                 (= kind :too-long) [422 (cfg/get-error-message :database :too-long :es)]
-                                 sql? [400 (cfg/get-error-message :database :general :es)]
-                                 :else [400 (cfg/get-error-message :database :general :es)])
+                                                         (str (cfg/get-error-message :database :unique locale) " " f)
+                                                         (cfg/get-error-message :database :unique locale))]
+                                 (= kind :fk)     [409 (cfg/get-error-message :database :foreign-key locale)]
+                                 (= kind :not-null) [422 (cfg/get-error-message :database :not-null locale)]
+                                 (= kind :check)  [422 (cfg/get-error-message :database :check locale)]
+                                 (= kind :too-long) [422 (cfg/get-error-message :database :too-long locale)]
+                                 sql? [400 (cfg/get-error-message :database :general locale)]
+                                 :else [400 (cfg/get-error-message :database :general locale)])
                 body-json (let [base {:ok false :error plain}
                                 base (if dd (merge base dd) base)]
                             (json/write-str base))]
@@ -145,6 +137,18 @@
   (fn [routes]
     (route-fn routes)))
 
+(defn wrap-streamable-body
+  "Normalizes known non-streamable response body types to plain strings.
+   This prevents Ring/Jetty from failing when a handler returns hiccup RawString."
+  [handler]
+  (fn [request]
+    (let [resp (handler request)
+          body (:body resp)]
+      (if (and (some? body)
+               (= "hiccup.util.RawString" (.getName (class body))))
+        (assoc resp :body (str body))
+        resp))))
+
 ;; Define the application routes dynamically
 ;; NOTE: Route order matters; more specific routes should come before generic ones.
 (def app-routes
@@ -155,10 +159,8 @@
      (wrap-routes open-routes)
      ;; I18n language switching routes
      (wrap-routes i18n-routes)
-;; Password change routes - protected
-      (wrap-login (wrap-routes password-routes))
-      ;; Cotizaciones routes - protected
-      (wrap-login (wrap-routes cotizaciones-routes))
+     ;; Password change routes - protected
+     (wrap-login (wrap-routes password-routes))
      ;; FK API routes (for dependent selects and create modal) - protected
      (wrap-login (wrap-routes fk-api-routes))
      ;; TabGrid AJAX routes - protected
@@ -183,7 +185,9 @@
 (defn create-app
   []
   (-> (app-routes)
+      (wrap-streamable-body)
       (wrap-multipart-params)
+      (i18n/wrap-locale)
       (wrap-defaults (-> site-defaults
                          (assoc-in [:security :anti-forgery] true)
                          (assoc-in [:session :store] (cookie-store {:key KEY}))

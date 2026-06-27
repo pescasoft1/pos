@@ -1,0 +1,23 @@
+{:entity :caja_movimientos
+ :title "Caja Movimientos"
+ :table "caja_movimientos"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :fecha :label "Fecha" :type :datetime :required? true}
+          {:id :tipo_movimiento :label "Tipo Movimiento" :type :textarea :required? true :placeholder "Tipo Movimiento..."}
+          {:id :monto :label "Monto" :type :decimal :required? true}
+          {:id :venta_id :label "Venta Id" :type :number}
+          {:id :descripcion :label "Descripcion" :type :textarea :placeholder "Descripcion..."}
+          {:id :usuario_id :label "Usuario Id" :type :number}]
+ 
+ :queries {:list "SELECT * FROM caja_movimientos ORDER BY id DESC"
+           :get "SELECT * FROM caja_movimientos WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+}

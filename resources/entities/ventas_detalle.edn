@@ -1,0 +1,25 @@
+{:entity :ventas_detalle
+ :title "Ventas Detalle"
+ :table "ventas_detalle"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-hidden true
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :venta_id :label "Ventas ID" :type :hidden}
+          {:id :producto_id :label "Productos ID" :type :hidden}
+          {:id :nombre :label "Nombre" :type :text :required? true :placeholder "Nombre..."}
+          {:id :cantidad :label "Cantidad" :type :number :required? true}
+          {:id :precio_unitario :label "Precio Unitario" :type :decimal :required? true}
+          {:id :subtotal :label "Subtotal" :type :decimal :required? true}
+          {:id :categoria :label "Categoria" :type :text :required? true :placeholder "Categoria..."}]
+ 
+ :queries {:list "SELECT ven.*, pro.nombre as producto_nombre, ven1.fecha as venta_nombre FROM ventas_detalle ven LEFT JOIN productos pro ON ven.producto_id = pro.id LEFT JOIN ventas ven1 ON ven.venta_id = ven1.id ORDER BY ven.id DESC"
+           :get "SELECT * FROM ventas_detalle WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+}

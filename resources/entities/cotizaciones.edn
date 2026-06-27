@@ -1,0 +1,32 @@
+{:entity :cotizaciones
+ :title "Cotizaciones"
+ :table "cotizaciones"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :fecha :label "Fecha" :type :datetime}
+          {:id :cliente_nombre :label "Cliente Nombre" :type :text :placeholder "Cliente Nombre..."}
+          {:id :cliente_telefono :label "Cliente Telefono" :type :text :placeholder "Cliente Telefono..."}
+          {:id :total :label "Total" :type :decimal :required? true}
+          {:id :estado :label "Estado" :type :text :required? true :placeholder "Estado..."}
+          {:id :notas :label "Notas" :type :textarea :placeholder "Notas..."}
+          {:id :usuario_id :label "Users ID" :type :hidden}
+          {:id :venta_id :label "Venta Id" :type :number}]
+ 
+ :queries {:list "SELECT cot.*, use.lastname as user_nombre FROM cotizaciones cot LEFT JOIN users use ON cot.usuario_id = use.id ORDER BY cot.id DESC"
+           :get "SELECT * FROM cotizaciones WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+ 
+ :subgrids [
+            {:entity :cotizaciones_detalle
+             :title "Cotizaciones Detalle"
+             :foreign-key :cotizacion_id
+             :icon "bi bi-list-ul"
+             :label "Cotizaciones Detalle"
+             :relationship-type :one-to-many}]}

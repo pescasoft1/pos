@@ -2,13 +2,13 @@
   (:require
    [compojure.core :refer [defroutes GET POST]]
    [pos.handlers.pos.controller :as pos]
-   [pos.handlers.poscel.controller :as poscel]
    [pos.handlers.qr.controller :as qr]
    [pos.handlers.dashboard.controller :as dashboard]
    [pos.handlers.home.controller :as home]
    [pos.handlers.reimpresion.controller :as reimp]
    [pos.handlers.corte.controller :as corte]
    [pos.handlers.caja.controller :as caja]
+   [pos.handlers.cotizaciones.controller :as cotizaciones-ctrl]
    [pos.handlers.tipo-cambio.controller :as tipo-cambio]))
 
 
@@ -18,11 +18,6 @@
   (GET "/tipo-cambio" request (tipo-cambio/index request))
   (POST "/tipo-cambio" request (tipo-cambio/save request))
   (GET "/pos" request (pos/pos request))
-
-  ;; POS CELULAR
-  (GET "/poscel" request (poscel/pos request))
-  (GET "/api/poscel/search" request (poscel/api-search request))
-  (POST "/api/poscel/register" request (poscel/api-register-sale request))
 
   (GET "/print-labels" request (qr/print-labels request))
   (GET "/api/pos/search" request (pos/api-search request))
@@ -37,4 +32,15 @@
 
   (GET "/caja" request (caja/caja request))
   (GET "/api/caja/list" request (caja/api-list request))
-  (POST "/api/caja/save" request (caja/api-save request)))
+  (POST "/api/caja/save" request (caja/api-save request))
+  
+    (GET "/cotizaciones" params [] (cotizaciones-ctrl/index params))
+  (GET "/cotizaciones/nuevo" params [] (cotizaciones-ctrl/nuevo params))
+  (GET "/cotizaciones/editar/:id" params [] (cotizaciones-ctrl/editar params))
+  (GET "/cotizaciones/ver/:id" params [] (cotizaciones-ctrl/ver params))
+  (POST "/api/cotizaciones/guardar" params [] (cotizaciones-ctrl/guardar params))
+  (POST "/api/cotizaciones/eliminar" params [] (cotizaciones-ctrl/eliminar params))
+  (POST "/api/cotizaciones/cambiar-estado" params [] (cotizaciones-ctrl/cambiar-estado params))
+  (POST "/api/cotizaciones/reembolsar" params [] (cotizaciones-ctrl/reembolsar params))
+  (GET "/api/cotizaciones/productos" params [] (cotizaciones-ctrl/api-search-productos params))
+  (GET "/api/cotizaciones/clientes" params [] (cotizaciones-ctrl/api-search-clientes params)))

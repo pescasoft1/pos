@@ -45,8 +45,8 @@
 ;;     :label "Reportes"
 ;;     :order 40
 ;;     :icon "bi bi-printer"
-;;     :items [["/reports/contactos" "Contactos" "bi bi-people" "U" 10]
-;;             ["/reports/users" "Usuarios" "bi bi-people"  "A" 20]]}}
+;;     :items [["/reports/pos" "Contactos"  "U" 10 "bi bi-people"]
+;;             ["/reports/users" "Usuarios" "A" 50 "bi bi-people"]]}}
 ;; Notice the order in items... It orders the dropdown items
 (def custom-dropdowns
   "Custom dropdown menus (not entity-based)"
@@ -62,7 +62,13 @@
            ["/reimpresion" "REIMPRESIÓN"  "U" 15 "bi bi-receipt"]
            ["/print-labels" "IMPRIMIR ETIQUETAS"  "U" 20 "bi bi-upc-scan"]
            ]}})
-  
+
+(def custom-dropdown-items
+  "Extra items to append to existing dropdowns (auto-generated or custom).
+   Maps a category keyword to items in [href label rights order icon] format.
+   Example:
+   {:Users [[\"/users/report\" \"User Report\" \"A\" 30 \"bi bi-file-text\"]]}"
+  {:Users [["/home/temp-password" :nav/tp "A" 10 "bi bi-file-text"]]})
 
 (defn ^:private parse-custom-menu-item
   "Parses a custom nav link or dropdown item vector.
@@ -168,19 +174,31 @@
         sorted-nav-links (combine-and-sort-nav-links auto-nav-links-as-maps formatted-custom-nav-links)
         ; Process custom dropdowns
         formatted-custom-dropdowns (format-custom-dropdowns custom-dropdowns)
-        ; Convert auto-generated dropdown items to maps for consistent sorting
+        ; Convert auto-generated dropdown items to maps for consistent sorting.
+        ; Uses parse-custom-menu-item (not parse-meta-args) because format-menu-item
+        ; now always emits [href title rights-or-nil order icon?] — the same format
+        ; as custom items — so the order field is correctly recovered.
         auto-dropdown-items-as-maps (fn [dropdown-config]
                                       (update dropdown-config :items
                                               (fn [items]
-                                                (map parse-meta-args items))))
+                                                (map parse-custom-menu-item items))))
         ; Apply conversion to all auto-generated dropdowns
         auto-dropdowns-as-maps (into {} (map (fn [[category-key dropdown-config]]
                                                [category-key (auto-dropdown-items-as-maps dropdown-config)])
                                              (:dropdowns auto-config)))
         ; Combine all dropdowns
         combined-dropdowns (merge auto-dropdowns-as-maps formatted-custom-dropdowns)
+        ; Merge custom dropdown items into existing dropdowns
+        combined-with-extra-items (reduce-kv
+                                   (fn [acc k items]
+                                     (if (contains? acc k)
+                                       (update acc k update :items
+                                               #(concat % (map format-custom-dropdown-item items)))
+                                       acc))
+                                   combined-dropdowns
+                                   custom-dropdown-items)
         ; Sort dropdowns by :order, then sort items within each and convert back to vectors
-        sorted-dropdowns (->> combined-dropdowns
+        sorted-dropdowns (->> combined-with-extra-items
                               (sort-by (fn [[_ cfg]] (or (:order cfg) 999)))
                               (map (fn [[category dropdown-config]]
                                      [category (update dropdown-config :items

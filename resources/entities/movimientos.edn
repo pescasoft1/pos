@@ -1,49 +1,22 @@
-{:entity        :movimientos
- :title         "Movimientos"
- :table         "movimientos"
- :connection    :default
- :rights        ["U" "A" "S"]
- :mode          :parameter-driven
- :menu-hidden?  true              ; Only accessed via the Productos subgrid
-
- :fields [{:id :id :label "ID" :type :hidden}
-
-          {:id           :producto_id
-           :label        "Producto"
-           :type         :fk
-           :fk           :productos
-           :fk-field     [:nombre]
-           :fk-can-create? true
-           :hidden-in-grid? true}
-          {:id :producto_nombre :label "Producto" :grid-only? true}
-
-          {:id      :tipo_movimiento
-           :label   "Tipo"
-           :type    :select
-           :required? true
-           :options [{:value "compra" :label "Compra"}
-                     {:value "venta"  :label "Venta"}]}
-
-          {:id :cantidad :label "Cantidad" :type :number :required? true :min 1}
-           {:id :fecha_movimiento :label :type :datetime "Fecha" :grid-only? true}
-          ]
-
- :queries {:list "SELECT
-                    mov.*,
-                    pro.nombre AS producto_nombre
-                  FROM movimientos mov
-                  LEFT JOIN productos pro ON mov.producto_id = pro.id
-                  ORDER BY mov.id DESC"
-
-           :get  "SELECT
-                    mov.*,
-                    pro.nombre AS producto_nombre
-                  FROM movimientos mov
-                  LEFT JOIN productos pro ON mov.producto_id = pro.id
-                  WHERE mov.id = ?"}
-
+{:entity :movimientos
+ :title "Movimientos"
+ :table "movimientos"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-hidden true
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :producto_id :label "Productos ID" :type :hidden}
+          {:id :tipo_movimiento :label "Tipo Movimiento" :type :text :required? true :placeholder "Tipo Movimiento..."}
+          {:id :fecha_movimiento :label "Fecha Movimiento" :type :date}
+          {:id :cantidad :label "Cantidad" :type :number :required? true}]
+ 
+ :queries {:list "SELECT mov.*, pro.nombre as producto_nombre FROM movimientos mov LEFT JOIN productos pro ON mov.producto_id = pro.id ORDER BY mov.id DESC"
+           :get "SELECT * FROM movimientos WHERE id = ?"}
+ 
  :actions {:new true :edit true :delete true}
-
- :hooks {:after-save    :pos.hooks.movimientos/after-save
-         :before-delete :pos.hooks.movimientos/before-delete
-         :after-delete  :pos.hooks.movimientos/after-delete}}
+}

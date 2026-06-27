@@ -1,0 +1,25 @@
+{:entity :cotizaciones_detalle
+ :title "Cotizaciones Detalle"
+ :table "cotizaciones_detalle"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-hidden true
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :cotizacion_id :label "Cotizaciones ID" :type :hidden}
+          {:id :producto_id :label "Productos ID" :type :hidden}
+          {:id :nombre :label "Nombre" :type :text :required? true :placeholder "Nombre..."}
+          {:id :cantidad :label "Cantidad" :type :number :required? true}
+          {:id :precio_unitario :label "Precio Unitario" :type :decimal :required? true}
+          {:id :subtotal :label "Subtotal" :type :decimal :required? true}
+          {:id :tipo :label "Tipo" :type :text :required? true :placeholder "Tipo..."}]
+ 
+ :queries {:list "SELECT cot.*, cot1.fecha as cotizacione_nombre, pro.nombre as producto_nombre FROM cotizaciones_detalle cot LEFT JOIN cotizaciones cot1 ON cot.cotizacion_id = cot1.id LEFT JOIN productos pro ON cot.producto_id = pro.id ORDER BY cot.id DESC"
+           :get "SELECT * FROM cotizaciones_detalle WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+}

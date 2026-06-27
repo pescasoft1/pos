@@ -1,0 +1,34 @@
+{:entity :ventas
+ :title "Ventas"
+ :table "ventas"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :fecha :label "Fecha" :type :datetime}
+          {:id :total :label "Total" :type :decimal :required? true}
+          {:id :pago :label "Pago" :type :decimal :required? true}
+          {:id :cambio :label "Cambio" :type :decimal :required? true}
+          {:id :usuario_id :label "Users ID" :type :hidden}
+          {:id :estado :label "Estado" :type :text :required? true :placeholder "Estado..."}
+          {:id :cotizacion_id :label "Cotizacion Id" :type :number}
+          {:id :tipo_pago :label "Tipo Pago" :type :textarea :placeholder "Tipo Pago..."}
+          {:id :descuento :label "Descuento" :type :textarea :placeholder "Descuento..."}
+          {:id :moneda :label "Moneda" :type :textarea :placeholder "Moneda..."}]
+ 
+ :queries {:list "SELECT ven.*, use.lastname as user_nombre FROM ventas ven LEFT JOIN users use ON ven.usuario_id = use.id ORDER BY ven.id DESC"
+           :get "SELECT * FROM ventas WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+ 
+ :subgrids [
+            {:entity :ventas_detalle
+             :title "Ventas Detalle"
+             :foreign-key :venta_id
+             :icon "bi bi-list-ul"
+             :label "Ventas Detalle"
+             :relationship-type :one-to-many}]}

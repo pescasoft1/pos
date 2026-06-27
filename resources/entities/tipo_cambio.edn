@@ -1,0 +1,22 @@
+{:entity :tipo_cambio
+ :title "Tipo Cambio"
+ :table "tipo_cambio"
+ :connection :default
+ :rights ["U" "A" "S"]
+ :mode :parameter-driven
+ :menu-order 999
+ :menu-hidden true
+ :menu-icon "bi bi-table"
+ 
+ :fields [
+          {:id :id :label "ID" :type :hidden}
+          {:id :fecha :label "Fecha" :type :date :required? true}
+          {:id :valor_pesos :label "Valor Pesos" :type :decimal :required? true}
+          {:id :usuario_id :label "Users ID" :type :hidden}
+          {:id :created_at :label "Created At" :type :datetime}]
+ 
+ :queries {:list "SELECT tip.*, use.lastname as user_nombre FROM tipo_cambio tip LEFT JOIN users use ON tip.usuario_id = use.id ORDER BY tip.id DESC"
+           :get "SELECT * FROM tipo_cambio WHERE id = ?"}
+ 
+ :actions {:new true :edit true :delete true}
+}
