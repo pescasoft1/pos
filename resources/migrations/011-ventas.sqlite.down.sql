@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS ventas_detalle;
-DROP TABLE IF EXISTS ventas;

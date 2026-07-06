@@ -1,1 +1,0 @@
-ALTER TABLE productos ADD COLUMN codigo_qr TEXT;
